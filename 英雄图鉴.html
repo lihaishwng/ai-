@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOL英雄库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-cover bg-center" style="background-image: url(https://www.loliapi.com/bg/)">
+    <!-- 导航栏 -->
+    <nav class="bg-white/80 backdrop-blur-sm shadow-sm">
+        <div class="max-w-2xl mx-auto p-4">
+            <h1 class="text-2xl font-bold text-orange-500">英雄联盟图鉴</h1>
+        </div>
+    </nav>
+
+    <!-- 搜索和筛选 -->
+    <div class="max-w-2xl mx-auto px-4 pt-4">
+        <div class="relative mb-4">
+            <input type="text" 
+                   id="searchInput"
+                   class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 bg-white/90 backdrop-blur"
+                   placeholder="搜索英雄名称...">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-gray-400"></i>
+        </div>
+        
+        <div class="flex space-x-2 overflow-x-auto pb-3">
+            <button class="filter-btn px-4 py-2 rounded-full bg-blue-100 text-blue-600 whitespace-nowrap" data-role="all">
+                全部职业
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap" data-role="刺客">
+                刺客
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap" data-role="法师">
+                法师
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap" data-role="战士">
+                战士
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap" data-role="ADC">
+                ADC
+            </button>
+        </div>
+    </div>
+
+    <!-- 英雄图鉴列表 -->
+    <main class="max-w-2xl mx-auto p-4">
+        <div id="heroGrid" class="grid grid-cols-2 gap-4 mt-4">
+            <!-- 动态加载的英雄卡片 -->
+            <div class="bg-white/90 backdrop-blur rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-transform hover:scale-[1.02] cursor-pointer"
+                 onclick="window.location.href='hero-detail.html?name=疾风剑豪'">
+                <div class="h-40 relative overflow-hidden">
+                    <img src="https://www.loliapi.com/bg/" 
+                         class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                         alt="英雄图片">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <h3 class="text-white font-bold text-lg">疾风剑豪</h3>
+                        <p class="text-blue-200 text-sm">刺客 / 中单</p>
+                    </div>
+                </div>
+                <div class="p-4 bg-gradient-to-b from-white to-blue-50">
+                    <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-full transition-colors">
+                        <i class="fa-regular fa-heart mr-2"></i>加入收藏
+                    </button>
+                </div>
+            </div>
+            <!-- 更多英雄卡片... -->
+        </div>
+    </main>
+
+    <script>
+        // 扩展英雄数据
+        const heroes = [
+            { 
+                name: '疾风剑豪', 
+                roles: ['刺客', '中单'], // 修改为数组格式
+                // ... 其他字段保持不变 ...
+            },
+            // 其他英雄数据同步修改roles字段为数组格式
+        ];
+
+        // 修正后的筛选逻辑
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 切换激活状态
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.replace('bg-blue-100', 'bg-gray-100');
+                    b.classList.replace('text-blue-600', 'text-gray-600');
+                });
+                this.classList.replace('bg-gray-100', 'bg-blue-100');
+                this.classList.replace('text-gray-600', 'text-blue-600');
+                
+                // 修正后的筛选逻辑
+                const role = this.dataset.role;
+                const filtered = window.heroes.filter(hero => 
+                    role === 'all' ? true : hero.roles.includes(role)
+                );
+                renderHeroes(filtered);
+            });
+        });
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            console.log('当前搜索关键词：', searchTerm);
+        });
+    </script>
+
+    <script>
+        // 新增音频对象和当前播放状态
+        let currentAudio = null;
+
+        // 获取英雄数据
+        async function fetchHeroes(search = '') {
+            try {
+                const params = new URLSearchParams({ q: search });
+                const response = await fetch(`https://api-vue-base.itheima.net/api/lol/search?${params}`);
+                const { data } = await response.json();
+                
+                renderHeroes(data);
+            } catch (error) {
+                console.error('获取英雄数据失败:', error);
+            }
+        }
+
+        // 更新渲染函数
+        function renderHeroes(heroes) {
+            const container = document.getElementById('heroGrid');
+            container.innerHTML = heroes.map(hero => `
+                <div class="bg-white/90 backdrop-blur rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-transform hover:scale-[1.02] cursor-pointer"
+                     onclick="window.location.href='hero-detail.html?heroId=${hero.heroId}'">
+                    <div class="h-40 relative overflow-hidden" 
+                         onclick="event.stopPropagation(); playAudio('${hero.selectAudio}')">
+                        <img src="${hero.icon.replace(/`/g, '')}" 
+                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                             alt="${hero.name}">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                            <h3 class="text-white font-bold text-lg">${hero.name}</h3>
+                            <p class="text-blue-200 text-sm">${hero.title}</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gradient-to-b from-white to-blue-50">
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="text-center">
+                                <div class="text-gray-500">攻击</div>
+                                <div class="font-bold">${hero.attack}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-500">防御</div>
+                                <div class="font-bold">${hero.defense}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-500">魔法</div>
+                                <div class="font-bold">${hero.magic}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 语音播放函数
+        function playAudio(url) {
+            if(currentAudio) {
+                currentAudio.pause();
+            }
+            currentAudio = new Audio(url.replace(/`/g, ''));
+            currentAudio.play();
+        }
+
+        // 初始化加载
+        fetchHeroes();
+
+        // 修改搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            fetchHeroes(e.target.value);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英雄详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0A1428;
+            color: #F0E6D2;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .lol-gold {
+            color: #C8AA6E;
+        }
+        .lol-bg-dark {
+            background-color: #091428;
+        }
+        .lol-bg-darker {
+            background-color: #061325;
+        }
+        .lol-border {
+            border-color: #463714;
+        }
+        .lol-gradient {
+            background: linear-gradient(to bottom, rgba(9, 20, 40, 0.8), rgba(9, 20, 40, 0.95));
+        }
+        .hero-card {
+            transition: all 0.3s ease;
+            border: 1px solid #463714;
+        }
+        .hero-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            border-color: #C8AA6E;
+        }
+        
+        /* 皮肤轮播样式 */
+        .skin-carousel {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skin-slide {
+            display: none;
+            animation: fadeEffect 1s;
+        }
+        
+        .skin-slide.active {
+            display: block;
+        }
+        
+        @keyframes fadeEffect {
+            from {opacity: 0.7;}
+            to {opacity: 1;}
+        }
+        
+        .skin-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .skin-nav:hover {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .skin-prev {
+            left: 10px;
+        }
+        
+        .skin-next {
+            right: 10px;
+        }
+        
+        .skin-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .skin-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+        }
+        
+        .skin-dot.active {
+            background-color: #C8AA6E;
+        }
+        
+        /* 技能样式 */
+        .skill-tab {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-tab.active {
+            border-color: #C8AA6E;
+            background-color: rgba(200, 170, 110, 0.2);
+        }
+        
+        .skill-content {
+            display: none;
+        }
+        
+        .skill-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* 语音播放按钮样式 */
+        .voice-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .voice-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(200, 170, 110, 0.2);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.5s ease-out;
+        }
+        
+        .voice-btn:hover::after {
+            transform: scale(1.5);
+        }
+        
+        .voice-btn.playing {
+            color: #C8AA6E;
+        }
+        
+        .voice-btn.playing i {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .voice-wave {
+            display: inline-block;
+            height: 16px;
+            width: 16px;
+            margin-left: 5px;
+        }
+        
+        .voice-wave.active span {
+            display: inline-block;
+            width: 2px;
+            height: 5px;
+            margin-right: 1px;
+            background-color: #C8AA6E;
+            animation: wave 1s infinite;
+        }
+        
+        .voice-wave span:nth-child(1) { animation-delay: 0.1s; }
+        .voice-wave span:nth-child(2) { animation-delay: 0.2s; }
+        .voice-wave span:nth-child(3) { animation-delay: 0.3s; }
+        .voice-wave span:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes wave {
+            0%, 100% { height: 5px; }
+            50% { height: 12px; }
+        }
+    </style>
+</head>
+<body class="h-full">
+    <!-- 导航栏 -->
+    <nav class="lol-bg-darker shadow-lg border-b lol-border">
+        <div class="max-w-6xl mx-auto p-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="首页.html" class="text-gray-400 hover:text-gray-200 mr-4">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                <img id="heroIcon" src="https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png" class="w-8 h-8 mr-2" alt="英雄图标">
+                <h2 id="heroTitle" class="text-xl font-semibold lol-gold">英雄详情</h2>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="首页.html" class="text-gray-400 hover:text-gray-200">
+                    <i class="fa-solid fa-home"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 加载状态 -->
+    <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-gray-400">正在加载英雄数据...</p>
+    </div>
+    
+    <!-- 错误状态 -->
+    <div id="errorState" class="flex flex-col items-center justify-center py-20 hidden">
+        <i class="fa-solid fa-triangle-exclamation text-red-500 text-4xl mb-4"></i>
+        <p class="text-gray-400 mb-4">加载英雄数据失败</p>
+        <button id="retryButton" class="px-4 py-2 bg-blue-900 text-blue-200 rounded-full hover:bg-blue-800 transition">
+            重试
+        </button>
+    </div>
+
+    <!-- 详情内容 -->
+    <main id="heroContent" class="max-w-6xl mx-auto p-4 hidden">
+        <div class="lol-bg-dark rounded-md shadow-lg overflow-hidden hero-card mb-6">
+            <!-- 皮肤轮播 -->
+            <div class="skin-carousel relative">
+                <div id="skinSlides" class="w-full">
+                    <!-- 皮肤将动态加载 -->
+                </div>
+                <div class="skin-nav skin-prev" onclick="prevSkin()">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </div>
+                <div class="skin-nav skin-next" onclick="nextSkin()">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+                <div id="skinDots" class="skin-dots">
+                    <!-- 皮肤导航点将动态加载 -->
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 lol-gradient p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div>
+                                <h3 id="heroName" class="text-3xl font-bold lol-gold">加载中...</h3>
+                                <p id="skinName" class="text-xl text-gray-300 mt-1">默认皮肤</p>
+                            </div>
+                            <!-- 添加语音播放按钮 -->
+                            <button id="voiceBtn" class="voice-btn ml-4 w-10 h-10 bg-blue-900/50 rounded-full flex items-center justify-center text-blue-200 hover:text-blue-100">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <div class="voice-wave ml-1">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </button>
+                        </div>
+                        <span id="heroRole" class="bg-blue-900 text-blue-200 px-3 py-1 rounded-full text-sm border border-blue-700">未知</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wider">背景故事</h4>
+                    <p id="heroBio" class="text-gray-300 leading-relaxed">加载中...</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-gray-900 p-4 rounded-lg border lol-border">
+                        <div class="text-sm text-gray-400 mb-2">技能强度</div>
+                        <div class="flex items-center">
+                            <div id="magicValue" class="text-2xl font-bold text-blue-400">0</div>
+                            <div class="ml-2 flex-1">
+                                <div class="h-2 bg-gray-700 rounded-full">
+                                    <div id="magicBar" class="h-2 bg-blue-500 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 p-4 rounded-lg border lol-border">
+                        <div class="text-sm text-gray-400 mb-2">操作难度</div>
+                        <div class="flex items-center">
+                            <div id="difficultyValue" class="text-2xl font-bold text-orange-400">0</div>
+                            <div class="ml-2 flex-1">
+                                <div class="h-2 bg-gray-700 rounded-full">
+                                    <div id="difficultyBar" class="h-2 bg-orange-500 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 技能介绍 -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">技能介绍</h4>
+                    
+                    <!-- 技能选项卡 -->
+                    <div id="skillTabs" class="flex space-x-2 mb-4">
+                        <!-- 技能选项卡将动态加载 -->
+                    </div>
+                    
+                    <!-- 技能内容 -->
+                    <div id="skillContents" class="bg-gray-900 p-4 rounded-lg border lol-border">
+                        <!-- 技能内容将动态加载 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 皮肤展示 -->
+        <div class="lol-bg-dark rounded-md shadow-lg overflow-hidden hero-card">
+            <div class="p-6">
+                <h4 class="text-xl font-bold lol-gold mb-4">皮肤展示</h4>
+                <div id="skinGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- 皮肤网格将动态加载 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 添加音频元素 -->
+    <audio id="heroVoice" class="hidden"></audio>
+
+    <script>
+        // 状态管理元素
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const heroContent = document.getElementById('heroContent');
+        const retryButton = document.getElementById('retryButton');
+        
+        // 显示加载状态
+        function showLoading() {
+            loadingState.classList.remove('hidden');
+            errorState.classList.add('hidden');
+            heroContent.classList.add('hidden');
+        }
+        
+        // 显示错误状态
+        function showError() {
+            loadingState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            heroContent.classList.add('hidden');
+        }
+        
+        // 显示英雄内容
+        function showHeroContent() {
+            loadingState.classList.add('hidden');
+            errorState.classList.add('hidden');
+            heroContent.classList.remove('hidden');
+        }
+        
+        // 角色映射表
+        const roleMap = {
+            'mage': '法师',
+            'fighter': '战士',
+            'tank': '坦克',
+            'assassin': '刺客',
+            'support': '辅助',
+            'marksman': 'ADC'
+        };
+        
+        // 皮肤轮播相关变量
+        let currentSlide = 0;
+        let skins = [];
+        
+        // 解析URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const heroId = urlParams.get('heroId');
+
+        // 语音播放相关变量和元素
+        const voiceBtn = document.getElementById('voiceBtn');
+        const heroVoice = document.getElementById('heroVoice');
+        const voiceWave = document.querySelector('.voice-wave');
+        let isPlaying = false;
+
+        // 语音播放函数
+        function playHeroVoice() {
+            if (!heroId) return;
+            
+            // 构建正确的语音URL - 使用选择语音
+            const voiceUrl = `https://game.gtimg.cn/images/lol/act/img/vo/choose/${heroId}.ogg`;
+            
+            if (isPlaying) {
+                // 如果正在播放，则停止
+                heroVoice.pause();
+                heroVoice.currentTime = 0;
+                isPlaying = false;
+                voiceBtn.classList.remove('playing');
+                voiceWave.classList.remove('active');
+            } else {
+                // 如果未播放，则开始播放
+                heroVoice.src = voiceUrl;
+                heroVoice.play().catch(error => {
+                    console.error('播放语音失败:', error);
+                    // 尝试使用备用格式
+                    tryFallbackVoice();
+                });
+                
+                // 更新按钮状态
+                voiceBtn.classList.add('playing');
+                voiceWave.classList.add('active');
+                isPlaying = true;
+            }
+        }
+
+        // 尝试备用语音格式
+        function tryFallbackVoice() {
+            // 尝试使用禁用语音
+            const fallbackUrl = `https://game.gtimg.cn/images/lol/act/img/vo/ban/${heroId}.ogg`;
+            heroVoice.src = fallbackUrl;
+            heroVoice.play().catch(error => {
+                console.error('播放备用语音失败:', error);
+                showVoiceError();
+            });
+        }
+
+        // 显示语音错误
+        function showVoiceError() {
+            voiceBtn.classList.remove('playing');
+            voiceWave.classList.remove('active');
+            isPlaying = false;
+            
+            // 显示错误提示
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute -top-10 left-1/2 transform -translate-x-1/2 bg-red-900 text-white px-3 py-1 rounded text-sm whitespace-nowrap';
+            tooltip.textContent = '语音加载失败';
+            voiceBtn.appendChild(tooltip);
+            
+            setTimeout(() => {
+                tooltip.remove();
+            }, 2000);
+        }
+
+        // 监听音频播放结束事件
+        heroVoice.addEventListener('ended', () => {
+            voiceBtn.classList.remove('playing');
+            voiceWave.classList.remove('active');
+            isPlaying = false;
+        });
+
+        // 绑定语音按钮点击事件
+        voiceBtn.addEventListener('click', playHeroVoice);
+
+        async function loadHeroData() {
+            showLoading();
+            
+            try {
+                // 使用heroId参数请求英雄详情
+                const response = await fetch(`https://hmajax.itheima.net/api/lol/info?id=${heroId || ''}`);
+                const result = await response.json();
+                
+                console.log('API返回结果:', result); // 调试用，查看API返回内容
+                
+                if(result.code === 200 && result.data && result.data.hero) {
+                    const hero = result.data.hero;
+                    skins = result.data.skins || [];
+                    
+                    // 更新页面标题
+                    document.title = `${hero.name} - ${hero.title} | 英雄详情`;
+                    
+                    // 更新DOM元素内容
+                    document.getElementById('heroName').textContent = hero.name || '未知英雄';
+                    document.getElementById('heroTitle').textContent = hero.title || '英雄详情';
+                    document.getElementById('heroIcon').src = hero.icon || 'https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png';
+                    
+                    // 更新角色标签
+                    const roleElement = document.getElementById('heroRole');
+                    if(roleElement && hero.roles && hero.roles.length > 0) {
+                        roleElement.textContent = roleMap[hero.roles[0]] || hero.roles[0];
+                    }
+                    
+                    // 更新技能强度和难度
+                    const magicValue = document.getElementById('magicValue');
+                    const magicBar = document.getElementById('magicBar');
+                    if(magicValue && magicBar) {
+                        magicValue.textContent = hero.magic || '0';
+                        magicBar.style.width = `${(hero.magic / 10) * 100}%`;
+                    }
+                    
+                    const difficultyValue = document.getElementById('difficultyValue');
+                    const difficultyBar = document.getElementById('difficultyBar');
+                    if(difficultyValue && difficultyBar) {
+                        difficultyValue.textContent = hero.difficulty || '0';
+                        difficultyBar.style.width = `${(hero.difficulty / 10) * 100}%`;
+                    }
+                    
+                    // 更新英雄背景故事
+                    const bioElement = document.getElementById('heroBio');
+                    if(bioElement) {
+                        bioElement.textContent = hero.shortBio || `${hero.name}（${hero.title}）是一位强大的英雄，擅长${hero.roles.map(r => {
+                            return roleMap[r] || r;
+                        }).join('和')}。`;
+                    }
+                    
+                    // 生成皮肤轮播
+                    generateSkinCarousel(skins);
+                    
+                    // 生成皮肤网格
+                    generateSkinGrid(skins);
+                    
+                    // 生成技能选项卡
+                    generateSkillTabs(hero);
+                    
+                    // 显示英雄内容
+                    showHeroContent();
+                } else {
+                    console.error('未找到英雄数据');
+                    showError();
+                }
+            } catch(error) {
+                console.error('加载详情失败:', error);
+                showError();
+            }
+        }
+        
+        // 生成皮肤轮播
+        function generateSkinCarousel(skins) {
+            if(!skins || skins.length === 0) return;
+            
+            const slidesContainer = document.getElementById('skinSlides');
+            const dotsContainer = document.getElementById('skinDots');
+            
+            // 清空容器
+            slidesContainer.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            
+            // 过滤出基础皮肤和非色彩变种的皮肤
+            const mainSkins = skins.filter(skin => skin.chromas === "0");
+            
+            // 生成轮播项
+            mainSkins.forEach((skin, index) => {
+                const slide = document.createElement('div');
+                slide.className = `skin-slide ${index === 0 ? 'active' : ''}`;
+                slide.dataset.skinId = skin.skinId;
+                slide.dataset.index = index;
+                
+                slide.innerHTML = `
+                    <img src="${skin.mainImg}" 
+                         class="w-full h-80 object-cover object-center"
+                         alt="${skin.name}"
+                         onerror="this.src='https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png'; this.classList.add('p-4');">
+                `;
+                
+                slidesContainer.appendChild(slide);
+                
+                // 生成导航点
+                const dot = document.createElement('div');
+                dot.className = `skin-dot ${index === 0 ? 'active' : ''}`;
+                dot.dataset.index = index;
+                dot.onclick = function() {
+                    showSlide(parseInt(this.dataset.index));
+                };
+                
+                dotsContainer.appendChild(dot);
+            });
+            
+            // 初始化显示第一个皮肤名称
+            if(mainSkins.length > 0) {
+                document.getElementById('skinName').textContent = mainSkins[0].name;
+            }
+            
+            // 设置当前轮播索引
+            currentSlide = 0;
+        }
+        
+        // 显示指定索引的轮播项
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.skin-slide');
+            const dots = document.querySelectorAll('.skin-dot');
+            
+            // 过滤出基础皮肤和非色彩变种的皮肤
+            const mainSkins = skins.filter(skin => skin.chromas === "0");
+            
+            // 边界检查
+            if(index >= mainSkins.length) {
+                index = 0;
+            } else if(index < 0) {
+                index = mainSkins.length - 1;
+            }
+            
+            // 隐藏所有轮播项
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // 移除所有导航点的激活状态
+            dots.forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // 显示指定索引的轮播项
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+            
+            // 更新皮肤名称
+            document.getElementById('skinName').textContent = mainSkins[index].name;
+            
+            // 更新当前轮播索引
+            currentSlide = index;
+        }
+        
+        // 显示上一个轮播项
+        function prevSkin() {
+            showSlide(currentSlide - 1);
+        }
+        
+        // 显示下一个轮播项
+        function nextSkin() {
+            showSlide(currentSlide + 1);
+        }
+        
+        // 生成皮肤网格
+        function generateSkinGrid(skins) {
+            if(!skins || skins.length === 0) return;
+            
+            const gridContainer = document.getElementById('skinGrid');
+            
+            // 清空容器
+            gridContainer.innerHTML = '';
+            
+            // 过滤出基础皮肤和非色彩变种的皮肤
+            const mainSkins = skins.filter(skin => skin.chromas === "0");
+            
+            // 生成皮肤卡片
+            mainSkins.forEach(skin => {
+                const card = document.createElement('div');
+                card.className = 'bg-gray-900/80 backdrop-blur rounded-md overflow-hidden shadow-lg hover:shadow-xl transition-transform cursor-pointer hero-card';
+                card.onclick = function() {
+                    // 在轮播中显示对应的皮肤
+                    const index = mainSkins.findIndex(s => s.skinId === skin.skinId);
+                    if(index !== -1) {
+                        showSlide(index);
+                        // 滚动到顶部
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }
+                };
+                
+                card.innerHTML = `
+                    <div class="relative overflow-hidden">
+                        <img src="${skin.iconImg}" 
+                             class="w-full aspect-square object-cover transition-transform duration-300 hover:scale-105"
+                             alt="${skin.name}"
+                             onerror="this.src='https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png'; this.classList.add('p-4');">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                            <h3 class="text-white font-bold text-sm">${skin.name}</h3>
+                        </div>
+                    </div>
+                `;
+                
+                gridContainer.appendChild(card);
+            });
+        }
+        
+        // 生成技能选项卡
+        function generateSkillTabs(hero) {
+            const tabsContainer = document.getElementById('skillTabs');
+            const contentsContainer = document.getElementById('skillContents');
+            
+            // 清空容器
+            tabsContainer.innerHTML = '';
+            contentsContainer.innerHTML = '';
+            
+            // 技能类型
+            const skillTypes = ['passive', 'q', 'w', 'e', 'r'];
+            const skillLabels = ['被动', 'Q', 'W', 'E', 'R'];
+            
+            // 技能描述（示例数据，实际应从API获取）
+            const skillDescriptions = {
+                'passive': hero.allytips && hero.allytips[0] ? hero.allytips[0] : '这是英雄的被动技能，提供持续性效果。',
+                'q': hero.allytips && hero.allytips[1] ? hero.allytips[1] : '这是英雄的Q技能，通常是主要伤害或效果技能。',
+                'w': hero.allytips && hero.allytips[2] ? hero.allytips[2] : '这是英雄的W技能，通常提供辅助效果或额外伤害。',
+                'e': hero.enemytips && hero.enemytips[0] ? hero.enemytips[0] : '这是英雄的E技能，通常是机动性或防御性技能。',
+                'r': hero.enemytips && hero.enemytips[1] ? hero.enemytips[1] : '这是英雄的终极技能，具有强大的效果，通常有较长冷却时间。'
+            };
+            
+            // 生成技能选项卡
+            skillTypes.forEach((type, index) => {
+                // 技能图标URL
+                let skillIconUrl;
+                const alias = hero.alias || '';
+                
+                if(type === 'passive') {
+                    skillIconUrl = `https://game.gtimg.cn/images/lol/act/img/passive/${alias}_P.png`;
+                } else {
+                    skillIconUrl = `https://game.gtimg.cn/images/lol/act/img/spell/${alias}${type.toUpperCase()}.png`;
+                }
+                
+                // 创建选项卡
+                const tab = document.createElement('div');
+                tab.className = `skill-tab bg-gray-900 p-2 rounded border lol-border text-center ${index === 0 ? 'active' : ''}`;
+                tab.dataset.skillType = type;
+                tab.dataset.index = index;
+                tab.onclick = function() {
+                    // 切换选项卡
+                    document.querySelectorAll('.skill-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 切换内容
+                    document.querySelectorAll('.skill-content').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    document.querySelector(`.skill-content[data-index="${this.dataset.index}"]`).classList.add('active');
+                };
+                
+                tab.innerHTML = `
+                    <img src="${skillIconUrl}" 
+                         class="w-12 h-12 mx-auto" 
+                         alt="${skillLabels[index]}技能"
+                         onerror="this.src='https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png'; this.classList.add('p-2');">
+                    <div class="text-xs mt-1 text-gray-300">${skillLabels[index]}</div>
+                `;
+                
+                tabsContainer.appendChild(tab);
+                
+                // 创建内容
+                const content = document.createElement('div');
+                content.className = `skill-content ${index === 0 ? 'active' : ''}`;
+                content.dataset.index = index;
+                
+                content.innerHTML = `
+                    <div class="flex items-start">
+                        <img src="${skillIconUrl}" 
+                             class="w-16 h-16 mr-4" 
+                             alt="${skillLabels[index]}技能"
+                             onerror="this.src='https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png'; this.classList.add('p-2');">
+                        <div>
+                            <h3 class="text-lg font-bold lol-gold mb-2">${skillLabels[index]}技能</h3>
+                            <p class="text-gray-300">${skillDescriptions[type]}</p>
+                        </div>
+                    </div>
+                `;
+                
+                contentsContainer.appendChild(content);
+            });
+        }
+        
+        // 重试按钮
+        retryButton.addEventListener('click', loadHeroData);
+
+        // 初始化加载
+        if(heroId) {
+            loadHeroData();
+        } else {
+            console.error('未提供英雄ID');
+            showError();
+        }
+        
+        // 键盘事件监听，用于皮肤轮播
+        document.addEventListener('keydown', function(e) {
+            if(e.key === 'ArrowLeft') {
+                prevSkin();
+            } else if(e.key === 'ArrowRight') {
+                nextSkin();
+            }
+        });
+    </script>
+</body>
+</html>

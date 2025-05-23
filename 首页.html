@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英雄列表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0A1428;
+            color: #F0E6D2;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .lol-gold {
+            color: #C8AA6E;
+        }
+        .lol-bg-dark {
+            background-color: #091428;
+        }
+        .lol-bg-darker {
+            background-color: #061325;
+        }
+        .lol-border {
+            border-color: #463714;
+        }
+        .hero-card {
+            transition: all 0.3s ease;
+            border: 1px solid #463714;
+        }
+        .hero-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            border-color: #C8AA6E;
+        }
+    </style>
+</head>
+<body class="h-full bg-cover bg-center" style="background-image: url('https://game.gtimg.cn/images/lol/v3/bg-index.jpg')">
+    <!-- 添加返回按钮 -->
+    <div class="absolute top-4 left-4 z-50">
+        <a href="./projects.html" class="flex items-center bg-gray-900/60 backdrop-blur text-white px-3 py-2 rounded-full hover:bg-gray-800 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>
+            <span>上一级</span>
+        </a>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="lol-bg-darker shadow-lg border-b lol-border">
+        <div class="max-w-6xl mx-auto p-4">
+            <div class="flex items-center">
+                <img src="https://game.gtimg.cn/images/lol/v3/logo-lol-v3.png" class="h-10 mr-3" alt="LOL Logo">
+                <h1 class="text-2xl font-bold lol-gold">英雄列表</h1>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 搜索和筛选 -->
+    <div class="max-w-6xl mx-auto px-4 pt-4">
+        <div class="relative mb-4">
+            <input type="text" 
+                   id="searchInput"
+                   class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-700 focus:outline-none focus:border-blue-500 bg-gray-800/80 text-white backdrop-blur"
+                   placeholder="搜索英雄名称...">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-gray-400"></i>
+        </div>
+        
+        <div class="flex space-x-2 overflow-x-auto pb-3">
+            <button class="filter-btn px-4 py-2 rounded-full bg-blue-900 text-blue-200 whitespace-nowrap border border-blue-700" data-role="all">
+                全部职业
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap border border-gray-700" data-role="刺客">
+                刺客
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap border border-gray-700" data-role="法师">
+                法师
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap border border-gray-700" data-role="战士">
+                战士
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap border border-gray-700" data-role="ADC">
+                ADC
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap border border-gray-700" data-role="辅助">
+                辅助
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap border border-gray-700" data-role="坦克">
+                坦克
+            </button>
+        </div>
+    </div>
+
+    <!-- 英雄列表 -->
+    <main class="max-w-6xl mx-auto p-4">
+        <div id="heroGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
+            <!-- 动态加载英雄 -->
+        </div>
+    </main>
+
+    <script>
+        // 初始化加载英雄数据
+        async function loadHeroes() {
+            try {
+                const response = await fetch('https://hmajax.itheima.net/api/lol/search');
+                const result = await response.json();
+                if (result.code === 200 && result.data) {
+                    renderHeroes(result.data);
+                } else {
+                    console.error('加载英雄数据失败:', result.msg);
+                }
+            } catch (error) {
+                console.error('请求英雄数据出错:', error);
+            }
+        }
+
+        // 渲染英雄列表
+        function renderHeroes(heroList) {
+            const container = document.getElementById('heroGrid');
+            container.innerHTML = heroList.map(hero => `
+                <div class="hero-card bg-gray-900/80 backdrop-blur rounded-md overflow-hidden shadow-lg hover:shadow-xl transition-transform cursor-pointer"
+                     onclick="window.location.href='详情页.html?heroId=${encodeURIComponent(hero.heroId)}'">
+                    <div class="relative overflow-hidden">
+                        <img src="${hero.icon}" 
+                             class="w-full aspect-square object-cover transition-transform duration-300 hover:scale-105"
+                             alt="${hero.name}">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                            <h3 class="text-white font-bold text-sm">${hero.name}</h3>
+                            <p class="text-gray-300 text-xs">${hero.title}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 筛选逻辑
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 切换激活状态
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-blue-900', 'text-blue-200');
+                    b.classList.add('bg-gray-800', 'text-gray-300');
+                });
+                this.classList.remove('bg-gray-800', 'text-gray-300');
+                this.classList.add('bg-blue-900', 'text-blue-200');
+                
+                // 筛选逻辑
+                const role = this.dataset.role;
+                
+                // 重新获取并筛选英雄
+                fetch('https://hmajax.itheima.net/api/lol/search')
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.code === 200) {
+                            let filtered = result.data;
+                            if (role !== 'all') {
+                                filtered = result.data.filter(hero => 
+                                    hero.roles && hero.roles.some(r => 
+                                        r.toLowerCase() === role.toLowerCase() ||
+                                        (r === 'marksman' && role === 'ADC') ||
+                                        (r === 'support' && role === '辅助') ||
+                                        (r === 'fighter' && role === '战士') ||
+                                        (r === 'assassin' && role === '刺客') ||
+                                        (r === 'tank' && role === '坦克')
+                                    )
+                                );
+                            }
+                            renderHeroes(filtered);
+                        }
+                    });
+            });
+        });
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            // 搜索英雄
+            fetch(`https://hmajax.itheima.net/api/lol/search?q=${searchTerm}`)
+                .then(res => res.json())
+                .then(result => {
+                    if (result.code === 200) {
+                        renderHeroes(result.data);
+                    }
+                });
+        });
+
+        // 初始加载
+        loadHeroes();
+    </script>
+</body>
+</html>

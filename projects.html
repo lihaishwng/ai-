@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的作品</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap');
+    
+    body {
+      font-family: 'ZCOOL XiaoWei', sans-serif;
+      background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+    
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .title-font {
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+    }
+    
+    .project-card {
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #FF9F43 0%, #FF4B2B 100%);
+      z-index: -1;
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      transition: transform 0.5s ease-out;
+    }
+    
+    .project-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .project-card:hover {
+      transform: translateY(-10px);
+      border-color: white;
+    }
+    
+    .project-card:hover .card-content {
+      color: white;
+    }
+    
+    .project-card:hover .card-description {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .back-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .back-btn:hover {
+      transform: translateX(-5px);
+    }
+    
+    .main-container {
+      backdrop-filter: blur(10px);
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <!-- 添加返回按钮 - 修改了颜色 -->
+  <div class="absolute top-6 left-6">
+    <a href="管理页面.html" class="back-btn flex items-center bg-purple-600 px-4 py-3 rounded-full text-white hover:bg-purple-700 transition-colors shadow-lg group">
+      <i class="fas fa-arrow-left mr-2 group-hover:mr-3 transition-all"></i>
+      <span>上一级</span>
+    </a>
+  </div>
+
+  <!-- 装饰元素 -->
+  <div class="absolute top-20 right-20 text-white/30 text-6xl floating hidden lg:block">
+    <i class="fas fa-lightbulb"></i>
+  </div>
+  <div class="absolute bottom-20 left-20 text-white/30 text-6xl floating hidden lg:block" style="animation-delay: 1s;">
+    <i class="fas fa-rocket"></i>
+  </div>
+
+  <div class="w-full max-w-4xl main-container rounded-3xl shadow-2xl p-8 md:p-12">
+    <div class="text-center mb-12">
+      <!-- 修改了标题字体颜色 -->
+      <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 title-font mb-3">我的创意作品</h1>
+      <p class="text-gray-600 text-lg">探索我的数字世界，发现有趣的创意</p>
+      <!-- 修改了分隔线颜色 -->
+      <div class="w-24 h-1 bg-gradient-to-r from-purple-600 to-pink-500 mx-auto mt-4 rounded-full"></div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- 作品项 - 随机笑话 -->
+      <a href="./随机笑话.html" class="project-card block bg-white rounded-2xl p-6 shadow-lg group">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 mr-4">
+            <i class="fas fa-laugh-squint text-xl"></i>
+          </div>
+          <div class="card-content font-bold text-xl text-gray-800 group-hover:text-white transition-colors">每日随机冷笑话</div>
+        </div>
+        <div class="card-description text-gray-600 group-hover:text-white/90 transition-colors">
+          这么热的天来听个冷笑话吧，让你在炎炎夏日感受一丝清凉~
+        </div>
+        <div class="mt-4 flex justify-end">
+          <span class="text-purple-500 group-hover:text-white transition-colors">
+            <i class="fas fa-arrow-right"></i>
+          </span>
+        </div>
+      </a>
+      
+      <!-- 作品项 - 励志短句 -->
+      <a href="./励志短句.html" class="project-card block bg-white rounded-2xl p-6 shadow-lg group">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-500 mr-4">
+            <i class="fas fa-fire text-xl"></i>
+          </div>
+          <div class="card-content font-bold text-xl text-gray-800 group-hover:text-white transition-colors">每日鸡汤</div>
+        </div>
+        <div class="card-description text-gray-600 group-hover:text-white/90 transition-colors">
+          让人热血沸腾的毒鸡汤，每天一碗，激励你勇往直前！
+        </div>
+        <div class="mt-4 flex justify-end">
+          <span class="text-purple-500 group-hover:text-white transition-colors">
+            <i class="fas fa-arrow-right"></i>
+          </span>
+        </div>
+      </a>
+      
+      <!-- 作品项 - 英雄图鉴 -->
+      <a href="./首页.html" class="project-card block bg-white rounded-2xl p-6 shadow-lg group md:col-span-2">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 mr-4">
+            <i class="fas fa-gamepad text-xl"></i>
+          </div>
+          <div class="card-content font-bold text-xl text-gray-800 group-hover:text-white transition-colors">英雄图鉴</div>
+        </div>
+        <div class="card-description text-gray-600 group-hover:text-white/90 transition-colors">
+          全面的英雄攻略推荐，助你在峡谷中所向披靡，成为最强王者！
+        </div>
+        <div class="mt-4 flex justify-end">
+          <span class="text-purple-500 group-hover:text-white transition-colors">
+            <i class="fas fa-arrow-right"></i>
+          </span>
+        </div>
+      </a>
+    </div>
+    
+    <div class="text-center pt-10">
+      <!-- 修改了底部按钮颜色 -->
+      <a href="index.html" class="inline-block bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transition-all hover:-translate-y-1">
+        <i class="fas fa-home mr-2"></i>返回主页
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>

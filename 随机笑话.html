@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机笑话</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .joke-card {
+            transition: all 0.3s ease;
+        }
+        .joke-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-primary {
+            background-color: #FF9800;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #F57C00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-secondary {
+            background-color: #03A9F4;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #0288D1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 bg-cover bg-center bg-fixed" id="body-element">
+    <!-- 添加返回按钮 -->
+    <div class="absolute top-4 left-4 z-10">
+        <a href="./projects.html" class="flex items-center bg-white/80 backdrop-blur-sm px-3 py-2 rounded-full text-orange-600 hover:text-orange-800 transition-colors shadow-md">
+            <i class="fas fa-arrow-left mr-2"></i>
+            <span>上一级</span>
+        </a>
+    </div>
+    
+    <!-- 页面标题 -->
+    <header class="w-full max-w-2xl mx-auto mt-16 mb-8 text-center">
+        <h1 class="text-4xl font-bold text-white drop-shadow-lg">随机笑话生成器</h1>
+        <p class="text-xl text-white/90 mt-2 drop-shadow-md">每天一笑，快乐常伴</p>
+    </header>
+
+    <!-- 按钮区域 -->
+    <div class="w-full max-w-2xl mx-auto mb-8 flex flex-col sm:flex-row justify-center gap-4">
+        <button id="singleJokeBtn" class="btn-primary px-6 py-3 rounded-full text-lg font-semibold shadow-lg flex items-center justify-center">
+            <i class="fa-solid fa-face-laugh-beam mr-2"></i>
+            生成单个笑话
+        </button>
+        <button id="multipleJokesBtn" class="btn-secondary px-6 py-3 rounded-full text-lg font-semibold shadow-lg flex items-center justify-center">
+            <i class="fa-solid fa-face-grin-squint-tears mr-2"></i>
+            生成多个笑话
+        </button>
+    </div>
+
+    <!-- 内容区 -->
+    <main class="w-full max-w-2xl mx-auto">
+        <!-- 单个笑话卡片 -->
+        <div id="singleJokeCard" class="joke-card bg-white/90 rounded-xl p-8 shadow-lg backdrop-blur mb-6 flex flex-col items-center justify-center">
+            <div class="text-4xl text-orange-400 mb-6">
+                <i class="fa-solid fa-quote-left"></i>
+            </div>
+            <div id="singleJokeContent" class="text-center text-xl text-gray-700 leading-relaxed min-h-[100px] flex items-center">
+                点击上方"生成单个笑话"按钮开始
+            </div>
+            <div class="mt-8 flex gap-4">
+                <button id="copyJokeBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-300 transition-colors flex items-center">
+                    <i class="fa-solid fa-copy mr-2"></i>复制
+                </button>
+                <button id="shareJokeBtn" class="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors flex items-center">
+                    <i class="fa-solid fa-share-nodes mr-2"></i>分享
+                </button>
+            </div>
+        </div>
+
+        <!-- 多个笑话列表 -->
+        <div id="multipleJokesCard" class="hidden">
+            <div id="jokesList" class="space-y-4">
+                <!-- 笑话将动态加载到这里 -->
+            </div>
+            <div class="mt-6 text-center">
+                <button id="loadMoreBtn" class="btn-secondary px-6 py-3 rounded-full text-lg font-semibold shadow-lg">
+                    <i class="fa-solid fa-plus mr-2"></i>加载更多
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部信息 -->
+    <footer class="w-full max-w-2xl mx-auto mt-12 text-center text-white/80">
+        <p>© 2023 笑话生成器 | 每天笑一笑，烦恼全忘掉</p>
+    </footer>
+
+    <script>
+        // 随机二次元背景图
+        async function setRandomAnimeBackground() {
+            try {
+                // 使用随机二次元API
+                document.getElementById('body-element').style.backgroundImage = `url('https://api.ixiaowai.cn/api/api.php?${new Date().getTime()}')`;
+                document.getElementById('body-element').style.backgroundColor = '#FFB74D'; // 备用背景色
+            } catch (error) {
+                console.error('设置背景图失败:', error);
+            }
+        }
+
+        // 获取单个笑话
+        async function fetchSingleJoke() {
+            try {
+                const singleJokeContent = document.getElementById('singleJokeContent');
+                singleJokeContent.innerHTML = '<div class="animate-pulse">加载中...</div>';
+                
+                const response = await fetch('https://api-vue-base.itheima.net/api/joke');
+                const data = await response.text();
+                
+                singleJokeContent.innerHTML = data;
+                
+                // 显示单个笑话卡片，隐藏多个笑话列表
+                document.getElementById('singleJokeCard').classList.remove('hidden');
+                document.getElementById('multipleJokesCard').classList.add('hidden');
+            } catch (error) {
+                console.error('获取笑话失败:', error);
+                document.getElementById('singleJokeContent').innerHTML = '获取笑话失败，请稍后重试';
+            }
+        }
+
+        // 获取多个笑话
+        async function fetchMultipleJokes() {
+            try {
+                const jokesList = document.getElementById('jokesList');
+                jokesList.innerHTML = '<div class="animate-pulse text-center p-4">加载中...</div>';
+                
+                // 生成5个笑话
+                const jokes = [];
+                for (let i = 0; i < 5; i++) {
+                    const response = await fetch('https://api-vue-base.itheima.net/api/joke');
+                    const joke = await response.text();
+                    jokes.push(joke);
+                }
+                
+                // 渲染笑话列表
+                jokesList.innerHTML = jokes.map(joke => `
+                    <div class="joke-card bg-white/90 rounded-xl p-6 shadow-md backdrop-blur">
+                        <p class="text-gray-700">${joke}</p>
+                        <div class="mt-4 flex justify-end gap-2">
+                            <button class="copy-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300 transition-colors text-sm">
+                                <i class="fa-solid fa-copy mr-1"></i>复制
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // 显示多个笑话列表，隐藏单个笑话卡片
+                document.getElementById('singleJokeCard').classList.add('hidden');
+                document.getElementById('multipleJokesCard').classList.remove('hidden');
+                
+                // 添加复制功能
+                document.querySelectorAll('.copy-btn').forEach((btn, index) => {
+                    btn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(jokes[index])
+                            .then(() => {
+                                const originalText = btn.innerHTML;
+                                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>已复制';
+                                setTimeout(() => {
+                                    btn.innerHTML = originalText;
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('复制失败:', err);
+                            });
+                    });
+                });
+            } catch (error) {
+                console.error('获取笑话失败:', error);
+                document.getElementById('jokesList').innerHTML = '<div class="text-center p-4 text-red-500">获取笑话失败，请稍后重试</div>';
+            }
+        }
+
+        // 加载更多笑话
+        async function loadMoreJokes() {
+            try {
+                const jokesList = document.getElementById('jokesList');
+                const loadMoreBtn = document.getElementById('loadMoreBtn');
+                
+                // 禁用按钮，显示加载状态
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>加载中...';
+                
+                // 获取3个新笑话
+                const jokes = [];
+                for (let i = 0; i < 3; i++) {
+                    const response = await fetch('https://api-vue-base.itheima.net/api/joke');
+                    const joke = await response.text();
+                    jokes.push(joke);
+                }
+                
+                // 创建新笑话元素
+                const newJokeElements = jokes.map(joke => {
+                    const jokeElement = document.createElement('div');
+                    jokeElement.className = 'joke-card bg-white/90 rounded-xl p-6 shadow-md backdrop-blur';
+                    jokeElement.innerHTML = `
+                        <p class="text-gray-700">${joke}</p>
+                        <div class="mt-4 flex justify-end gap-2">
+                            <button class="copy-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300 transition-colors text-sm">
+                                <i class="fa-solid fa-copy mr-1"></i>复制
+                            </button>
+                        </div>
+                    `;
+                    
+                    // 添加复制功能
+                    const copyBtn = jokeElement.querySelector('.copy-btn');
+                    copyBtn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(joke)
+                            .then(() => {
+                                const originalText = copyBtn.innerHTML;
+                                copyBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>已复制';
+                                setTimeout(() => {
+                                    copyBtn.innerHTML = originalText;
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('复制失败:', err);
+                            });
+                    });
+                    
+                    return jokeElement;
+                });
+                
+                // 添加新笑话到列表
+                newJokeElements.forEach(element => {
+                    jokesList.appendChild(element);
+                });
+                
+                // 恢复按钮状态
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.innerHTML = '<i class="fa-solid fa-plus mr-2"></i>加载更多';
+                
+                // 添加动画效果
+                newJokeElements.forEach(element => {
+                    element.style.opacity = '0';
+                    element.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        element.style.transition = 'all 0.5s ease';
+                        element.style.opacity = '1';
+                        element.style.transform = 'translateY(0)';
+                    }, 100);
+                });
+            } catch (error) {
+                console.error('加载更多笑话失败:', error);
+                document.getElementById('loadMoreBtn').innerHTML = '<i class="fa-solid fa-plus mr-2"></i>加载更多';
+                document.getElementById('loadMoreBtn').disabled = false;
+            }
+        }
+
+        // 复制单个笑话
+        document.getElementById('copyJokeBtn').addEventListener('click', () => {
+            const jokeText = document.getElementById('singleJokeContent').textContent;
+            navigator.clipboard.writeText(jokeText)
+                .then(() => {
+                    const copyBtn = document.getElementById('copyJokeBtn');
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i>已复制';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                });
+        });
+
+        // 分享笑话
+        document.getElementById('shareJokeBtn').addEventListener('click', () => {
+            const jokeText = document.getElementById('singleJokeContent').textContent;
+            if (navigator.share) {
+                navigator.share({
+                    title: '分享一个笑话',
+                    text: jokeText,
+                    url: window.location.href
+                })
+                .catch(err => {
+                    console.error('分享失败:', err);
+                });
+            } else {
+                alert('您的浏览器不支持分享功能，请手动复制分享');
+            }
+        });
+
+        // 绑定按钮事件
+        document.getElementById('singleJokeBtn').addEventListener('click', fetchSingleJoke);
+        document.getElementById('multipleJokesBtn').addEventListener('click', fetchMultipleJokes);
+        document.getElementById('loadMoreBtn').addEventListener('click', loadMoreJokes);
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 设置随机二次元背景
+            setRandomAnimeBackground();
+            
+            // 默认加载单个笑话
+            fetchSingleJoke();
+        });
+    </script>
+</body>
+</html>
